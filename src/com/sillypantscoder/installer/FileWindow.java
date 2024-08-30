@@ -73,12 +73,15 @@ public class FileWindow extends Window {
 			new Divider(FOLDER_UP_ICON.get_height(), 8, 2, new Color(100, 100, 100)),
 			new Text(getFolderName(), ROW_HEIGHT)
 		});
-		VCombine vc = new VCombine(new Element[entries.size() + 1]);
-		vc.children[0] = header;
-		element = vc;
+		VCombine scroll = new VCombine(new Element[entries.size()]);
+		scrollContainer = new ScrollContainer(scroll);
+		element = new VCombine(new Element[] {
+			header,
+			scrollContainer
+		});
 		for (int i = 0; i < entries.size(); i++) {
 			Element e = entries.get(i).makeElement();
-			vc.children[i + 1] = e;
+			scroll.children[i] = e;
 		}
 	}
 	public Surface frame(int width, int height) {
@@ -132,12 +135,7 @@ public class FileWindow extends Window {
 			HzCombine row = new HzCombine(new Color(0, 0, 0, 0), new Element[] {
 				new Image(type.getIcon()),
 				new Text(name, ROW_HEIGHT - 4)
-			}) {
-				public Surface draw(int maxWidth, int maxHeight) {
-					Surface s = super.draw(maxWidth, maxHeight);
-					return s;
-				}
-			};
+			});
 			return new Clickable(this::click, row);
 		}
 		public void click() {
