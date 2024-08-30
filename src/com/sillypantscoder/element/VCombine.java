@@ -34,12 +34,12 @@ public class VCombine extends Element {
 		return rendered;
 	}
 	public Surface draw(int maxWidth, int maxHeight) {
-		Surface[] rendered = renderChildren(maxHeight, maxHeight);
-		Surface result = new Surface(getMinWidth(), maxHeight, new Color(0, 0, 0, 0));
-		int x = 0;
+		Surface[] rendered = renderChildren(maxWidth, maxHeight);
+		Surface result = new Surface(maxWidth, maxHeight, new Color(0, 0, 0, 0));
+		int y = 0;
 		for (Surface childSurface : rendered) {
-			result.blit(childSurface, x, 0);
-			x += childSurface.get_width();
+			result.blit(childSurface, 0, y);
+			y += childSurface.get_height();
 		}
 		return result;
 	}

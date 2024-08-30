@@ -5,23 +5,29 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Optional;
 
+import com.sillypantscoder.element.Clickable;
+import com.sillypantscoder.element.Divider;
+import com.sillypantscoder.element.Element;
+import com.sillypantscoder.element.HzCombine;
+import com.sillypantscoder.element.Image;
+import com.sillypantscoder.element.ScrollContainer;
+import com.sillypantscoder.element.Text;
+import com.sillypantscoder.element.VCombine;
 import com.sillypantscoder.utils.AssetLoader;
 import com.sillypantscoder.windowlib.Surface;
 import com.sillypantscoder.windowlib.Window;
 
 public class FileWindow extends Window {
 	public static final int ROW_HEIGHT = 28;
-	public static final int SCROLLBAR_WIDTH = 15;
-	public static final int SCROLLBAR_HEIGHT = 80;
 	public static final Surface FILE_ICON = loadIcon("file.png");
 	public static final Surface FOLDER_ICON = loadIcon("folder.png");
 	public static final Surface FOLDER_UP_ICON = loadIcon("folder_up.png");
 	public static final Surface GIT_ICON = loadIcon("git.png");
 	public ArrayList<String> dir;
 	public ArrayList<FileEntry> entries;
-	public int scroll;
+	public Element element;
+	public ScrollContainer scrollContainer;
 	public int width;
 	public int height;
 	public FileWindow() {
@@ -45,7 +51,7 @@ public class FileWindow extends Window {
 		return FOLDER_ICON;
 	}
 	public void recalculateEntries() {
-		this.scroll = 0;
+		if (this.scrollContainer != null) scrollContainer.scroll = 0;
 		this.entries = new ArrayList<FileEntry>();
 		// get list of files
 		String[] files = new File(getFolderName()).list();
@@ -61,28 +67,26 @@ public class FileWindow extends Window {
 			FileEntry entry = FileEntry.create(this, path);
 			this.entries.add(entry);
 		}
+		// convert to element
+		HzCombine header = new HzCombine(new Color(200, 200, 200), new Element[] {
+			new Clickable(this::clickUpFolder, new Image(FOLDER_UP_ICON)),
+			new Divider(FOLDER_UP_ICON.get_height(), 8, 2, new Color(100, 100, 100)),
+			new Text(getFolderName(), ROW_HEIGHT)
+		});
+		VCombine vc = new VCombine(new Element[entries.size() + 1]);
+		vc.children[0] = header;
+		element = vc;
+		for (int i = 0; i < entries.size(); i++) {
+			Element e = entries.get(i).makeElement();
+			vc.children[i + 1] = e;
+		}
 	}
 	public Surface frame(int width, int height) {
 		this.width = width;
 		this.height = height;
-		Surface s = new Surface(width, height, Color.WHITE);
-		// Draw entries
-		for (int i = 0; i < entries.size(); i++) {
-			FileEntry e = entries.get(i);
-			int drawY = (ROW_HEIGHT * (i + 1)) - scroll;
-			Surface row = e.getRow(width);
-			s.blit(row, 0, drawY);
-		}
-		// Draw header (on top)
-		s.blit(getHeader(width), 0, 0);
-		// Draw scroll bar
-		int barX = width - SCROLLBAR_WIDTH;
-		double space = (height - SCROLLBAR_HEIGHT) - ROW_HEIGHT;
-		double barpos = ((double)(scroll) / ROW_HEIGHT) / entries.size();
-		int barY = (int)(space * barpos) + ROW_HEIGHT;
-		s.drawRect(new Color(100, 100, 100), barX, barY, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
-		// Return
-		return s;
+		// Draw window
+		if (element == null) recalculateEntries();
+		return element.draw(width, height);
 	}
 	public String getFolderName() {
 		String result = "/";
@@ -124,15 +128,17 @@ public class FileWindow extends Window {
 			this.type = type;
 			this.name = name;
 		}
-		public Surface getRow(int width) {
-			Surface s = new Surface(width, ROW_HEIGHT, new Color(0, 0, 0, 0));
-			// icon
-			s.blit(type.getIcon(), 0, 0);
-			// text
-			Surface text = Surface.renderText(ROW_HEIGHT - 4, this.name, Color.BLACK);
-			s.blit(text, ROW_HEIGHT + 4, -4);
-			// return
-			return s;
+		public Element makeElement() {
+			HzCombine row = new HzCombine(new Color(0, 0, 0, 0), new Element[] {
+				new Image(type.getIcon()),
+				new Text(name, ROW_HEIGHT - 4)
+			}) {
+				public Surface draw(int maxWidth, int maxHeight) {
+					Surface s = super.draw(maxWidth, maxHeight);
+					return s;
+				}
+			};
+			return new Clickable(this::click, row);
 		}
 		public void click() {
 			if (this.type == FileType.FOLDER) {
@@ -158,58 +164,20 @@ public class FileWindow extends Window {
 			}
 		}
 	}
+	public void clickUpFolder() {
+		this.dir.remove(this.dir.size() - 1);
+		this.recalculateEntries();
+	}
 	public void keyDown(String e) {}
 	public void keyUp(String e) {}
-	public Optional<Integer> mouseScrollbarOffset = Optional.empty();
-	public void mouseMoved(int x, int y) {
-		mouseScrollbarOffset.ifPresent((v) -> {
-			double targetY = y - v;
-			double space = (height - SCROLLBAR_HEIGHT) - ROW_HEIGHT;
-			double barpos = (targetY - ROW_HEIGHT) / space;
-			scroll = (int)(barpos * entries.size() * ROW_HEIGHT);
-			// clamp
-			if (this.scroll < 0) this.scroll = 0;
-		});
-	}
-	public void mouseDown(int x, int y) {
-		if (x >= width - SCROLLBAR_WIDTH) {
-			// find current scrollbar pos
-			double space = (height - SCROLLBAR_HEIGHT) - ROW_HEIGHT;
-			double barpos = ((double)(scroll) / ROW_HEIGHT) / entries.size();
-			int barY = (int)(space * barpos) + ROW_HEIGHT;
-			// find offset
-			int offset = y - barY;
-			if (offset < 0 || offset > SCROLLBAR_HEIGHT) offset = SCROLLBAR_HEIGHT / 2;
-			mouseScrollbarOffset = Optional.ofNullable(offset);
-			mouseMoved(x, y);
-		}
-	}
+	public void mouseMoved(int x, int y) {}
+	public void mouseDown(int x, int y) {}
 	public void mouseUp(int x, int y) {
-		// Check for title bar
-		if (y <= ROW_HEIGHT) {
-			mouseScrollbarOffset = Optional.empty();
-			if (x <= ROW_HEIGHT + 4) {
-				// Back button is pressed
-				this.dir.remove(this.dir.size() - 1);
-				this.recalculateEntries();
-			}
-			return;
-		}
-		// Stop scrolling
-		if (mouseScrollbarOffset.isPresent()) {
-			mouseScrollbarOffset = Optional.empty();
-			return;
-		}
-		// Check items
-		int itemY = Math.floorDiv((y + scroll) - ROW_HEIGHT, ROW_HEIGHT);
-		if (itemY >= entries.size()) return;
-		// Click the item!
-		FileEntry e = entries.get(itemY);
-		e.click();
+		this.element.elementAtPoint(width, height, x, y);
 	}
 	public void mouseWheel(int amount) {
-		this.scroll += amount;
-		if (amount < 0) this.scroll -= 3;
-		if (this.scroll < 0) this.scroll = 0;
+		this.scrollContainer.scroll += amount;
+		if (amount < 0) this.scrollContainer.scroll -= 3;
+		if (this.scrollContainer.scroll < 0) this.scrollContainer.scroll = 0;
 	}
 }

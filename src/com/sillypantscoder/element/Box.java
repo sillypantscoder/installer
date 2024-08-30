@@ -33,6 +33,11 @@ public class Box extends Element {
 	public Box(Element child, Optional<Runnable> onClick) {
 		this.child = child;
 		this.top = new Side();
+		this.left = new Side();
+		this.right = new Side();
+		this.bottom = new Side();
+		this.backgroundColor = new Color(255, 255, 255, 0);
+		this.borderColor = new Color(0, 0, 0, 0);
 		this.onClick = onClick;
 	}
 	public static Box fromCSS(Element child, Runnable onClick, String css) {
@@ -48,23 +53,25 @@ public class Box extends Element {
 		};
 		Box b = new Box(child, Optional.ofNullable(onClick));
 		for (String rule : css.split("; ")) {
+			if (rule.length() == 0) continue;
 			String name = rule.split(": ")[0];
 			String value = rule.split(": ")[1];
-			if (name == "background") b.backgroundColor = toColor.apply(value);
-			else if (name == "border-color") b.borderColor = toColor.apply(value);
+			if (value.endsWith(";")) value = value.substring(0, value.length() - 1);
+			if (name.equals("background")) b.backgroundColor = toColor.apply(value);
+			else if (name.equals("border-color")) b.borderColor = toColor.apply(value);
 			else if (name.split("-").length == 1) {
 				int intv = Integer.parseInt(value);
-				if (name == "padding") {
+				if (name.equals("padding")) {
 					b.top.padding = intv;
 					b.left.padding = intv;
 					b.right.padding = intv;
 					b.bottom.padding = intv;
-				} else if (name == "border") {
+				} else if (name.equals("border")) {
 					b.top.border = intv;
 					b.left.border = intv;
 					b.right.border = intv;
 					b.bottom.border = intv;
-				} else if (name == "margin") {
+				} else if (name.equals("margin")) {
 					b.top.margin = intv;
 					b.left.margin = intv;
 					b.right.margin = intv;
@@ -75,14 +82,14 @@ public class Box extends Element {
 				String side_str = name.split("-")[1];
 				// Find correct side
 				Side side = null;
-				if (side_str == "top") side = b.top;
-				else if (side_str == "left") side = b.left;
-				else if (side_str == "right") side = b.right;
-				else if (side_str == "bottom") side = b.bottom;
+				if (side_str.equals("top")) side = b.top;
+				else if (side_str.equals("left")) side = b.left;
+				else if (side_str.equals("right")) side = b.right;
+				else if (side_str.equals("bottom")) side = b.bottom;
 				// Apply attribute
-				if (attr == "padding") side.padding = Integer.parseInt(value);
-				else if (attr == "border") side.border = Integer.parseInt(value);
-				else if (attr == "margin") side.margin = Integer.parseInt(value);
+				if (attr.equals("padding")) side.padding = Integer.parseInt(value);
+				else if (attr.equals("border")) side.border = Integer.parseInt(value);
+				else if (attr.equals("margin")) side.margin = Integer.parseInt(value);
 			}
 		}
 		return b;
@@ -96,14 +103,21 @@ public class Box extends Element {
 	public Surface draw(int maxWidth, int maxHeight) {
 		Surface childSurface = child.draw(maxWidth, maxHeight);
 		Surface result = new Surface(getMinWidth(), getMinHeight(), new Color(0, 0, 0, 0));
-		result.drawRect(backgroundColor, 0, 0, getMinWidth(), getMinHeight());
-		result.drawRect(borderColor, left.margin, top.margin, getMinWidth() - left.margin - right.margin, getMinHeight() - top.margin - bottom.margin);
+		result.drawRect(backgroundColor, left.margin, top.margin, getMinWidth() - left.margin - right.margin, getMinHeight() - top.margin - bottom.margin);
+		// Draw border
+		if (top.border > 0) result.drawLine(borderColor, left.margin, top.margin, left.margin + getMinWidth() - left.margin - right.margin, top.margin, top.border);
+		if (left.border > 0) result.drawLine(borderColor, left.margin, top.margin, left.margin, top.margin + getMinHeight() - top.margin - bottom.margin, left.border);
+		if (right.border > 0) result.drawLine(borderColor, left.margin + getMinWidth() - left.margin - right.margin, top.margin, left.margin + getMinWidth() - left.margin - right.margin, top.margin + getMinHeight() - top.margin - bottom.margin, right.border);
+		if (bottom.border > 0) result.drawLine(borderColor, left.margin, top.margin + getMinHeight() - top.margin - bottom.margin, left.margin + getMinWidth() - left.margin - right.margin, top.margin + getMinHeight() - top.margin - bottom.margin, bottom.border);
+		// Draw child
 		result.blit(childSurface, left.margin + left.border + left.padding, top.margin + top.border + top.padding);
+		System.out.println("box" + result.get_width());
 		return result;
 	}
 	public Optional<Element> elementAtPoint(int maxWidth, int maxHeight, int x, int y) {
 		if (y > top.margin && y < top.margin + top.padding + top.border + child.getMinHeight() + bottom.padding + bottom.border) {
 			if (x > left.margin && x < left.margin + left.padding + left.border + child.getMinWidth() + right.padding + right.border) {
+				this.onClick.ifPresent((v) -> v.run());
 				return child.elementAtPoint(maxWidth, maxHeight, x - left.margin - left.padding - left.border, y - top.margin - top.padding - top.border);
 			}
 		}

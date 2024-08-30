@@ -6,8 +6,10 @@ import java.util.Optional;
 import com.sillypantscoder.windowlib.Surface;
 
 public class HzCombine extends Element {
+	public Color background;
 	public Element[] children;
-	public HzCombine(Element[] children) {
+	public HzCombine(Color background, Element[] children) {
+		this.background = background;
 		this.children = children;
 	}
 	public int getMinWidth() {
@@ -35,7 +37,7 @@ public class HzCombine extends Element {
 	}
 	public Surface draw(int maxWidth, int maxHeight) {
 		Surface[] rendered = renderChildren(maxHeight, maxHeight);
-		Surface result = new Surface(maxWidth, getMinHeight(), new Color(0, 0, 0, 0));
+		Surface result = new Surface(maxWidth, getMinHeight(), this.background);
 		int x = 0;
 		for (Surface childSurface : rendered) {
 			result.blit(childSurface, x, 0);
