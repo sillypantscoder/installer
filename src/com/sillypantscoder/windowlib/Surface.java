@@ -163,12 +163,12 @@ public class Surface {
 			e.printStackTrace();
 		}
 	}
-	public static Font getFont(int size) {
+	public static Font getFont(int size, boolean bold) {
 		// Get base font
 		if (FONT == null) {
-			FONT = new Font("Monospaced", Font.BOLD, 30);
+			FONT = new Font("Monospaced", 0, 30);
 			// try {
-			// 	FONT = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("Segoe UI Bold.ttf"));
+			// 	FONT = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("Font File.ttf"));
 			// } catch (FileNotFoundException e) {
 			// 	e.printStackTrace();
 			// } catch (FontFormatException e) {
@@ -178,11 +178,12 @@ public class Surface {
 			// }
 		}
 		// Derive font of specific size
-		return FONT.deriveFont((float)(size));
+		return FONT.deriveFont((float)(size)).deriveFont(bold ? Font.BOLD : 0);
 	}
-	public static Surface renderText(int size, String text, Color color) {
+	public static Surface renderText(int size, boolean bold, String text, Color color) {
+		if (text.length() == 0) return new Surface(1, 1, new Color(0, 0, 0, 0));
 		// Measure the text
-		Font font = getFont(size);
+		Font font = getFont(size, bold);
 		Surface measure = new Surface(1, 1, Color.BLACK);
 		Graphics2D big = (Graphics2D)(measure.img.getGraphics());
 		big.setFont(font);

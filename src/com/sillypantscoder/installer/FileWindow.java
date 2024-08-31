@@ -71,7 +71,7 @@ public class FileWindow extends Window {
 		HzCombine header = new HzCombine(new Color(200, 200, 200), new Element[] {
 			new Clickable(this::clickUpFolder, new Image(FOLDER_UP_ICON)),
 			new Divider(FOLDER_UP_ICON.get_height(), 8, 2, new Color(100, 100, 100)),
-			new Text(getFolderName(), ROW_HEIGHT)
+			new Text(getFolderName(), ROW_HEIGHT, true)
 		});
 		VCombine scroll = new VCombine(new Element[entries.size()]);
 		scrollContainer = new ScrollContainer(scroll);
@@ -98,20 +98,6 @@ public class FileWindow extends Window {
 		}
 		return result;
 	}
-	public Surface getHeader(int width) {
-		Surface header = new Surface(width, ROW_HEIGHT, new Color(0, 0, 0, 0));
-		//     (background)
-		header.drawRect(new Color(200, 200, 200), 0, 0, width, ROW_HEIGHT);
-		//     (up icon)
-		header.blit(FOLDER_UP_ICON, 0, 0);
-		//     (line)
-		header.drawLine(new Color(100, 100, 100), ROW_HEIGHT + 4, 0, ROW_HEIGHT + 4, ROW_HEIGHT - 1, 2);
-		//     (title)
-		Surface title = Surface.renderText(ROW_HEIGHT - 4, getFolderName(), Color.BLACK);
-		header.blit(title, ROW_HEIGHT + 8, -4);
-		//     (return)
-		return header;
-	}
 	public static class FileEntry {
 		public static enum FileType {
 			FILE,
@@ -134,7 +120,7 @@ public class FileWindow extends Window {
 		public Element makeElement() {
 			HzCombine row = new HzCombine(new Color(0, 0, 0, 0), new Element[] {
 				new Image(type.getIcon()),
-				new Text(name, ROW_HEIGHT - 4)
+				new Text(name, ROW_HEIGHT - 4, false)
 			});
 			return new Clickable(this::click, row);
 		}

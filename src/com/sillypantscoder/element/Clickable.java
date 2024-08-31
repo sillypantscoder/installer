@@ -15,7 +15,7 @@ public class Clickable extends Element {
 		return this.child.getMinWidth();
 	}
 	public int getMinHeight() {
-				return this.child.getMinHeight();
+		return this.child.getMinHeight();
 	}
 	public Surface draw(int maxWidth, int maxHeight) {
 		return this.child.draw(maxWidth, maxHeight);
