@@ -160,8 +160,6 @@ public class FileWindow extends Window {
 		this.element.elementAtPoint(width, height, x, y);
 	}
 	public void mouseWheel(int amount) {
-		this.scrollContainer.scroll += amount;
-		if (amount < 0) this.scrollContainer.scroll -= 3;
-		if (this.scrollContainer.scroll < 0) this.scrollContainer.scroll = 0;
+		this.scrollContainer.scrollBy(amount);
 	}
 }

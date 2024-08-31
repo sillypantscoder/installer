@@ -56,6 +56,10 @@ public class ScrollContainer extends Element {
 			this.scroll = 0;
 		}
 	}
+	public void scrollBy(int amount) {
+		if (amount < 0) this.scroll -= 3;
+		this.setScroll(this.scroll + amount);
+	}
 	public void setScrollFromMouse(int y, int maxWidth, int maxHeight) {
 		int innerHeight = child.draw(maxWidth - SCROLLBAR_WIDTH, child.getMinHeight()).get_height();
 		// find new scroll value

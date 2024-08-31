@@ -7,7 +7,7 @@ import com.sillypantscoder.windowlib.Surface;
 
 public class Button extends Element {
 	public Runnable onClick;
-	public int padding = 4;
+	public int padding = 8;
 	public String text;
 	public int textSize = 16;
 	public boolean full;

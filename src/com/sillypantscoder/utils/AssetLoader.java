@@ -112,6 +112,7 @@ public class AssetLoader {
 			return cacheSurfaces.get(filename).copy();
 		} else {
 			File f = getResourceLocation(filename);
+			if (! f.isFile()) throw new RuntimeException("Provided filename: " + filename + " is not a regular file");
 			try {
 				BufferedImage image = ImageIO.read(f);
 				Surface result = new Surface(image);
