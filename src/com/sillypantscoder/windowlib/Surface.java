@@ -219,6 +219,19 @@ public class Surface {
 	public static Surface combineVertically(ArrayList<Surface> surfaces, Color background) {
 		return combineVertically(surfaces.toArray(new Surface[surfaces.size()]), background);
 	}
+	public static Surface combineHorizontally(Surface[] surfaces, Color background) {
+		int width = 1;
+		for (int i = 0; i < surfaces.length; i++) { int w = surfaces[i].get_width(); width += w; }
+		int height = 1;
+		for (int i = 0; i < surfaces.length; i++) { int h = surfaces[i].get_height(); if (h > height) { height = h; } }
+		Surface total = new Surface(width, height, background);
+		int cum_x = 0;
+		for (int i = 0; i < surfaces.length; i++) {
+			total.blit(surfaces[i], cum_x, 0);
+			cum_x += surfaces[i].get_width();
+		}
+		return total;
+	}
 	public static class DummyImageObserver implements ImageObserver {
 		public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
 			return false;

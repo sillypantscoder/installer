@@ -24,6 +24,7 @@ public class FileWindow extends Window {
 	public static final Surface FOLDER_ICON = loadIcon("folder.png");
 	public static final Surface FOLDER_UP_ICON = loadIcon("folder_up.png");
 	public static final Surface GIT_ICON = loadIcon("git.png");
+	public static final Surface NEW_ICON = loadIcon("plus.png");
 	public ArrayList<String> dir;
 	public ArrayList<FileEntry> entries;
 	public Element element;
@@ -70,6 +71,8 @@ public class FileWindow extends Window {
 		// convert to element
 		HzCombine header = new HzCombine(new Color(200, 200, 200), new Element[] {
 			new Clickable(this::clickUpFolder, new Image(FOLDER_UP_ICON)),
+			new Divider(FOLDER_UP_ICON.get_height(), 8, 2, new Color(100, 100, 100)),
+			new Clickable(this::clickNew, new Image(NEW_ICON)),
 			new Divider(FOLDER_UP_ICON.get_height(), 8, 2, new Color(100, 100, 100)),
 			new Text(getFolderName(), ROW_HEIGHT, true)
 		});
@@ -151,6 +154,9 @@ public class FileWindow extends Window {
 	public void clickUpFolder() {
 		this.dir.remove(this.dir.size() - 1);
 		this.recalculateEntries();
+	}
+	public void clickNew() {
+		new NewWindow(new File(this.getFolderName()));
 	}
 	public void keyDown(String e) {}
 	public void keyUp(String e) {}

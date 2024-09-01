@@ -132,7 +132,7 @@ public class Update {
 		String bodyString = String.join("\n", body);
 		return new Update(window, commitID, mode, title, date, bodyString);
 	}
-	private static String runProcess(File path, boolean inheritIO, String[] args) {
+	public static String runProcess(File path, boolean inheritIO, String[] args) {
 		ProcessBuilder builder = new ProcessBuilder(args);
 		builder.directory(path);
 		if (inheritIO) builder.inheritIO();

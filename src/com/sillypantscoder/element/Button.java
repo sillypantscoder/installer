@@ -11,6 +11,7 @@ public class Button extends Element {
 	public String text;
 	public int textSize = 16;
 	public boolean full;
+	public Color backgroundColor = new Color(0, 0, 200);
 	public Button(Runnable onClick, String text, boolean full) {
 		this.onClick = onClick;
 		this.text = text;
@@ -30,7 +31,7 @@ public class Button extends Element {
 		// Create the surface
 		Surface docsbtn = new Surface(textS.get_width() + (padding * 4), textS.get_height() + (padding * 4), new Color(0, 0, 0, 0));
 		// Draw background
-		if (full) docsbtn.drawRect(new Color(0, 0, 200), padding, padding, textS.get_width() + (padding * 2), textS.get_height() + (padding * 2));
+		if (full) docsbtn.drawRect(backgroundColor, padding, padding, textS.get_width() + (padding * 2), textS.get_height() + (padding * 2));
 		// Draw the text
 		docsbtn.blit(textS, padding * 2, padding * 2);
 		// Return

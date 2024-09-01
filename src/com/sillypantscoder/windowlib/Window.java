@@ -18,6 +18,9 @@ public abstract class Window {
 	public void open(String title, int width, int height) {
 		panel.run(title, getIcon(), width, height);
 	}
+	public void close() {
+		panel.closeWindow();
+	}
 	public BufferedImage painter(int width, int height) {
 		return this.frame(width, height).img;
 	}
