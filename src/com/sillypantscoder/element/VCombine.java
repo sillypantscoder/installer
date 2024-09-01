@@ -58,4 +58,12 @@ public class VCombine extends Element {
 		}
 		return Optional.empty();
 	}
+	public void appendChild(Element newE) {
+		Element[] newChildren = new Element[children.length + 1];
+		for (int i = 0; i < children.length; i++) {
+			newChildren[i] = children[i];
+		}
+		newChildren[children.length] = newE;
+		children = newChildren;
+	}
 }

@@ -3,6 +3,7 @@ package com.sillypantscoder.installer;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -57,9 +58,24 @@ public class GitWindow extends Window {
 		return s;
 	}
 	public Element getDocsButton() {
-		boolean hasDocs = new File(path.getAbsolutePath() + "/README.md").exists();
-		// Get the settings
-		String t = hasDocs ? "Open documentation" : "No documentation is available";
+		File readme = new File(path.getAbsolutePath() + "/README.md");
+		boolean hasDocs = readme.exists();
+		// Find readme length
+		int lines = -1;
+		if (hasDocs) {
+			try {
+				FileInputStream is = new FileInputStream(readme);
+				byte[] b = is.readAllBytes();
+				is.close();
+				String contents = new String(b);
+				lines = contents.split("\n").length;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		// Get the button settings
+		String linesStr = lines == -1 ? "" : " (" + lines + " lines)";
+		String t = hasDocs ? "Open documentation" + linesStr : "No documentation is available";
 		Runnable onClick = hasDocs ? this::clickDocsButton : () -> {};
 		// Create element
 		return new Button(onClick, t, hasDocs);

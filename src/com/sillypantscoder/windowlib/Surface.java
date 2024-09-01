@@ -5,9 +5,9 @@ import java.awt.Color;
 import java.awt.Font;
 // import java.awt.FontFormatException;
 import java.awt.Graphics2D;
-import java.awt.Image;
+// import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
+// import java.awt.image.ImageObserver;
 import java.awt.image.RescaleOp;
 import java.io.File;
 // import java.io.FileInputStream;
@@ -24,13 +24,16 @@ public class Surface {
 	public static Font FONT = null;
 	public BufferedImage img;
 	public Surface(int width, int height, Color color) {
+		if (width <= 0 || height <= 0) color = new Color(0, 0, 0, 0);
+		if (width <= 0) width = 1;
+		if (height <= 0) height = 1;
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		this.fill(color);
 	}
 	public Surface(BufferedImage image) {
 		img = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = img.createGraphics();
-		g2d.drawImage(image, 0, 0, new DummyImageObserver());
+		g2d.drawImage(image, 0, 0, null);
 		g2d.dispose();
 	}
 	public void fill(Color color) {
@@ -41,7 +44,7 @@ public class Surface {
 	}
 	public void blit(Surface other, int x, int y) {
 		Graphics2D g2d = img.createGraphics();
-		g2d.drawImage(other.img, x, y, new DummyImageObserver());
+		g2d.drawImage(other.img, x, y, null);
 		g2d.dispose();
 	}
 	public void blit(Surface other, int centerX, int centerY, double rotation) {
@@ -49,7 +52,7 @@ public class Surface {
 		g2d.translate(centerX, centerY);
 		g2d.rotate(Math.toRadians(rotation));
 		g2d.translate(-centerX, -centerY);
-		g2d.drawImage(other.img, centerX - other.get_width() / 2, centerY - other.get_height() / 2, new DummyImageObserver());
+		g2d.drawImage(other.img, centerX - other.get_width() / 2, centerY - other.get_height() / 2, null);
 		g2d.dispose();
 	}
 	public int get_width() {
@@ -231,10 +234,5 @@ public class Surface {
 			cum_x += surfaces[i].get_width();
 		}
 		return total;
-	}
-	public static class DummyImageObserver implements ImageObserver {
-		public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
-			return false;
-		}
 	}
 }

@@ -22,8 +22,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
-import com.sillypantscoder.windowlib.Surface.DummyImageObserver;
-
 /**
  * A panel that automatically redraws itself.
  */
@@ -44,7 +42,7 @@ public class RepaintingPanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		try {
-			g.drawImage(painter.apply(getWidth(), getHeight()), 0, 0, new DummyImageObserver());
+			g.drawImage(painter.apply(getWidth(), getHeight()), 0, 0, null);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			try {

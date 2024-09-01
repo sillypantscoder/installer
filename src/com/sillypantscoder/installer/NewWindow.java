@@ -7,6 +7,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -125,6 +126,11 @@ public class NewWindow extends Window {
 			new Text("Downloading data...", 16, true)
 		});
 		String description = getRepoDescription(user, repoName);
+		if (description == null) {
+			// the repo does not exist!
+			nonexistentRepoError();
+			return;
+		}
 		// Show details
 		element = new VCombine(new Element[] {
 			new HzCombine(new Color(200, 200, 200), new Element[] {
@@ -142,12 +148,13 @@ public class NewWindow extends Window {
 	}
 	public String getRepoDescription(String user, String repoName) {
 		String data = makeGetRequest("https://github.com/" + user + "/" + repoName);
+		if (data == null) return null;
 		Matcher matcher = Pattern.compile("<p class=\"f4 mb-3 \">([ \t\n!-~]*)</p>").matcher(data);
 		if (matcher.find()) {
 			String description = matcher.group(1).strip();
 			return description;
 		} else {
-			return "(Error finding description.)";
+			return null;
 		}
 	}
 	public String makeGetRequest(String urlString) {
@@ -160,6 +167,8 @@ public class NewWindow extends Window {
 			byte[] data = is.readAllBytes();
 			String d = new String(data);
 			return d;
+		} catch (FileNotFoundException e) {
+			return null;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -173,7 +182,7 @@ public class NewWindow extends Window {
 				}
 			}
 		}
-		return "";
+		return null;
 	}
 	public void cloneRepo(String user, String repoName) {
 		element = new VCombine(new Element[] {
@@ -197,7 +206,25 @@ public class NewWindow extends Window {
 		});
 	}
 	public void replaceWithGit(String repoName) {
-		new GitWindow(dir.getAbsolutePath() + "/" + repoName);
 		this.close();
+		new GitWindow(dir.getAbsolutePath() + "/" + repoName);
+	}
+	public void nonexistentRepoError() {
+		element = new VCombine(new Element[] {
+			new HzCombine(new Color(200, 200, 200), new Element[] {
+				new Text("Install", 20, true)
+			}),
+			new Text("Paste GitHub URL:", 16, false),
+			new Button(() -> {}, "Click to paste", true),
+			new Text("Invalid GitHub URL", 16, true)
+		});
+		new Thread(() -> {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			makeElement();
+		}, "promise").start();
 	}
 }
