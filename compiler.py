@@ -12,7 +12,7 @@ def checkfolder(folder: str):
 		if os.path.isdir(newname):
 			checkfolder(newname)
 		else:
-			if newname.split(".")[-1] in ["java", "html", "css", "js", "xml"]:
+			if newname.split(".")[-1] in ["java", "html", "css", "js", "xml", "png"]:
 				files.append(newname)
 checkfolder("src")
 

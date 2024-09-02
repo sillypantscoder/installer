@@ -24,6 +24,7 @@ import com.sillypantscoder.element.RepositoryTitle;
 import com.sillypantscoder.element.Text;
 import com.sillypantscoder.element.VCombine;
 import com.sillypantscoder.element.WrappingText;
+import com.sillypantscoder.utils.Utils;
 import com.sillypantscoder.windowlib.Surface;
 import com.sillypantscoder.windowlib.Window;
 
@@ -191,7 +192,7 @@ public class NewWindow extends Window {
 			}),
 			new Text("Please wait...", 16, false),
 		});
-		Update.runProcess(dir, true, new String[] { "git", "clone", "https://github.com/" + user + "/" + repoName });
+		Utils.runProcess(dir, true, new String[] { "git", "clone", "https://github.com/" + user + "/" + repoName });
 		try {
 			Thread.sleep(400);
 		} catch (InterruptedException e) {

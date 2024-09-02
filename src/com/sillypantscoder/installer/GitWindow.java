@@ -5,7 +5,10 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.sillypantscoder.element.Button;
 import com.sillypantscoder.element.Clickable;
@@ -16,6 +19,7 @@ import com.sillypantscoder.element.Image;
 import com.sillypantscoder.element.ScrollContainer;
 import com.sillypantscoder.element.Text;
 import com.sillypantscoder.element.VCombine;
+import com.sillypantscoder.utils.Utils;
 import com.sillypantscoder.windowlib.Surface;
 import com.sillypantscoder.windowlib.Window;
 
@@ -46,6 +50,10 @@ public class GitWindow extends Window {
 			new Button(this::clickHistoryButton, "View update history", true)
 		});
 		this.element = main;
+		for (String fileName : getExecutables()) {
+			Button b = new Button(() -> clickExecutable(fileName), "Run program: " + fileName, true);
+			main.appendChild(b);
+		}
 	}
 	public Surface frame(int width, int height) {
 		this.width = width;
@@ -79,9 +87,6 @@ public class GitWindow extends Window {
 		Runnable onClick = hasDocs ? this::clickDocsButton : () -> {};
 		// Create element
 		return new Button(onClick, t, hasDocs);
-	}
-	public Surface getUpdateRow() {
-		return null;
 	}
 	public void keyDown(String e) {}
 	public void keyUp(String e) {}
@@ -123,5 +128,60 @@ public class GitWindow extends Window {
 				}
 			}
 		}
+	}
+	public static HashMap<String, Function<String, String[]>> executables = makeExecutables();
+	public static HashMap<String, Function<String, String[]>> makeExecutables() {
+		HashMap<String, Function<String, String[]>> data = new HashMap<String, Function<String, String[]>>();
+		data.put("jar", (name) -> new String[] { "java", "-jar", name });
+		data.put("py", (name) -> new String[] { "python3", name });
+		return data;
+	}
+	public static HashMap<String, String> helpPages = makeHelpPages();
+	public static HashMap<String, String> makeHelpPages() {
+		HashMap<String, String> data = new HashMap<String, String>();
+		data.put("java", "https://jdk.java.net/22/");
+		data.put("python3", "https://www.python.org/downloads/");
+		return data;
+	}
+	public ArrayList<String> getExecutables() {
+		ArrayList<String> s = new ArrayList<String>();
+		for (File fileName : path.listFiles()) {
+			if (fileName.isFile()) {
+				String[] m = fileName.getName().split("\\.");
+				String ext = m[m.length - 1];
+				if (executables.containsKey(ext)) {
+					s.add(fileName.getName());
+				}
+			}
+		}
+		return s;
+	}
+	public void clickExecutable(String fileName) {
+		// Find file extension
+		String[] m = fileName.split("\\.");
+		String ext = m[m.length - 1];
+		// Find the command to execute
+		Function<String, String[]> func = executables.get(ext);
+		if (func == null) return;
+		String[] command = func.apply(fileName);
+		// Find whether the command is installed
+		String precheck = Utils.runProcess(path, false, new String[] { command[0], "--version" });
+		if (precheck.length() == 0) {
+			new ErrorWindow("You need to install \"" + command[0] + "\" in order to run this program!", new Button[] {
+				new Button(() -> Utils.openWebsite(helpPages.get(command[0])), "Install", true)
+			});
+			return;
+		}
+		// Run the program
+		element = new VCombine(new Element[] {
+			new HzCombine(new Color(200, 200, 200), new Element[] {
+				new Text("Running", 20, true)
+			}),
+			new Text("The program is running", 16, false)
+		});
+		new Thread(() -> {
+			Utils.runProcess(path, true, command);
+			makeElement();
+		}).start();
 	}
 }

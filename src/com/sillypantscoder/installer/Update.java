@@ -2,8 +2,6 @@ package com.sillypantscoder.installer;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -15,6 +13,7 @@ import com.sillypantscoder.element.HzCombine;
 import com.sillypantscoder.element.Text;
 import com.sillypantscoder.element.VCombine;
 import com.sillypantscoder.element.WrappingText;
+import com.sillypantscoder.utils.Utils;
 
 public class Update {
 	public static enum UpdateMode {
@@ -32,10 +31,10 @@ public class Update {
 		public void apply(File path, String commitID) {
 			if (this == YOU_ARE_HERE) return;
 			if (this == RESET) {
-				runProcess(path, true, new String[] { "git", "reset", "--hard", commitID });
+				Utils.runProcess(path, true, new String[] { "git", "reset", "--hard", commitID });
 				return;
 			} else {
-				runProcess(path, true, new String[] { "git", "merge", commitID });
+				Utils.runProcess(path, true, new String[] { "git", "merge", commitID });
 			}
 		}
 	}
@@ -87,8 +86,8 @@ public class Update {
 	}
 	// Check For Updates
 	public static Optional<Update> checkForNextUpdate(GitWindow window) {
-		runProcess(window.path, false, new String[] { "git", "fetch" });
-		String logData = runProcess(window.path, false, new String[] { "git", "log", "main..origin/main", "--format=oneline" });
+		Utils.runProcess(window.path, false, new String[] { "git", "fetch" });
+		String logData = Utils.runProcess(window.path, false, new String[] { "git", "log", "main..origin/main", "--format=oneline" });
 		// Examine log data for updates
 		if (logData.length() == 0) {
 			// there are no updates
@@ -100,9 +99,9 @@ public class Update {
 		return Optional.ofNullable(getUpdateFromID(window, commitID, UpdateMode.MERGE));
 	}
 	public static Update[] getAllUpdates(GitWindow window) {
-		runProcess(window.path, false, new String[] { "git", "fetch" });
-		String logData = runProcess(window.path, false, new String[] { "git", "log", "origin/main", "--format=oneline" });
-		String currentCommitID = runProcess(window.path, false, new String[] { "git", "show", "--format=oneline", "-s" }).split(" ")[0];
+		Utils.runProcess(window.path, false, new String[] { "git", "fetch" });
+		String logData = Utils.runProcess(window.path, false, new String[] { "git", "log", "origin/main", "--format=oneline" });
+		String currentCommitID = Utils.runProcess(window.path, false, new String[] { "git", "show", "--format=oneline", "-s" }).split(" ")[0];
 		// Examine log data for updates
 		String[] commits = logData.split("\n");
 		Update[] updates = new Update[commits.length];
@@ -114,7 +113,7 @@ public class Update {
 		return updates;
 	}
 	public static Update getUpdateFromID(GitWindow window, String commitID, UpdateMode mode) {
-		String[] commitData = runProcess(window.path, false, new String[] { "git", "log", commitID, "-1", "--date=iso-strict" }).split("\n");
+		String[] commitData = Utils.runProcess(window.path, false, new String[] { "git", "log", commitID, "-1", "--date=iso-strict" }).split("\n");
 		if (commitData.length == 0 && commitData[0].length() == 0) return null;
 		// - Parse date
 		LocalDateTime date = LocalDateTime.parse(commitData[2].substring(8), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
@@ -131,24 +130,5 @@ public class Update {
 		}
 		String bodyString = String.join("\n", body);
 		return new Update(window, commitID, mode, title, date, bodyString);
-	}
-	public static String runProcess(File path, boolean inheritIO, String[] args) {
-		ProcessBuilder builder = new ProcessBuilder(args);
-		builder.directory(path);
-		if (inheritIO) builder.inheritIO();
-		try {
-			Process p = builder.start();
-			p.waitFor();
-			if (!inheritIO) {
-				InputStream stream = p.getInputStream();
-				String data = new String(stream.readAllBytes());
-				return data;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return "";
 	}
 }
