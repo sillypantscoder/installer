@@ -50,8 +50,10 @@ public class GitWindow extends Window {
 			new Button(this::clickHistoryButton, "View update history", true)
 		});
 		this.element = main;
-		for (String fileName : getExecutables()) {
-			Button b = new Button(() -> clickExecutable(fileName), "Run program: " + fileName, true);
+		ArrayList<String> exec = getExecutables();
+		if (exec.size() > 0) main.appendChild(new Text("Run the program:", 20, true));
+		for (String fileName : exec) {
+			Button b = new Button(() -> clickExecutable(fileName), "Run " + fileName, true);
 			main.appendChild(b);
 		}
 	}

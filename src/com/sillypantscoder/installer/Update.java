@@ -54,7 +54,7 @@ public class Update {
 	}
 	public Element makeElement() {
 		return new BorderBox(8, new Color(0, 0, 200), 2, 8, new Color(200, 200, 255), new VCombine(new Element[] {
-			new Text("Update is available:", 16, false),
+			new Text(mode == UpdateMode.MERGE ? "Update is available:" : "Update:", 16, false),
 			new Text(name, 20, true),
 			new WrappingText(extraInfo, 16, false),
 			new Button(this::applyUpdate, mode.getButtonText(), mode.isFull())
